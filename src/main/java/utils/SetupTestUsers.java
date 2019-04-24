@@ -2,12 +2,56 @@ package utils;
 
 import entity.Role;
 import entity.User;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.persistence.EntityManager;
 
 public class SetupTestUsers {
 
     public static void main(String[] args) {
 
+        testSwappiFutureCalls();
+        //startCorrectly();
+    }
+
+    public static void testSwappiFutureCalls() {
+        //https://swapi.co/api/people/?format=json , der er 87 count, hvis man kan få count ud af json kan det være dynamisk
+        int countpeople = 87;
+        int iterator = 0;
+        ForkJoinPool executor = new ForkJoinPool(25,
+                ForkJoinPool.defaultForkJoinWorkerThreadFactory,
+                null, false);
+        List<Future<String>> futureArrayList = new ArrayList();
+        while (iterator < countpeople) {
+            Callable<String> worker = new SwappiData(iterator);
+            futureArrayList.add(executor.submit(worker));
+            iterator++;
+        }
+        futureArrayList.parallelStream().forEach(future -> {
+            try {
+                String getFutureStr = future.get(5, TimeUnit.SECONDS);
+                System.out.println("future value: " + getFutureStr + "\n");
+            } catch (InterruptedException | ExecutionException | TimeoutException ex) {
+                Logger.getLogger(SetupTestUsers.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
+    }
+
+    public static void startCorrectly() {
         EntityManager em = PuSelector.getEntityManagerFactory("pu").createEntityManager();
 
         // IMPORTAAAAAAAAAANT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -34,7 +78,6 @@ public class SetupTestUsers {
         System.out.println("Testing user with OK password: " + user.verifyPassword("test"));
         System.out.println("Testing user with wrong password: " + user.verifyPassword("test1"));
         System.out.println("Created TEST Users");
-
     }
 
 }

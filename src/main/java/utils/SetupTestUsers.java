@@ -17,11 +17,11 @@ public class SetupTestUsers {
         em.getTransaction().begin();
         Role userRole = new Role("user");
         Role adminRole = new Role("admin");
-        User user = new User("user", "test1");
+        User user = new User("", "");
         user.addRole(userRole);
-        User admin = new User("admin", "test2");
+        User admin = new User("", "");
         admin.addRole(adminRole);
-        User both = new User("user_admin", "test3");
+        User both = new User("", "");
         both.addRole(userRole);
         both.addRole(adminRole);
         em.persist(userRole);

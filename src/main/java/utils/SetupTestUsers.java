@@ -24,13 +24,13 @@ public class SetupTestUsers {
 
     public static void main(String[] args) {
 
-        testSwappiFutureCalls();
-        //startCorrectly();
+        //testSwappiFutureCalls();
+        startCorrectly();
     }
 
-    public static void testSwappiFutureCalls() {
+    public static String testSwappiFutureCalls() {
         //https://swapi.co/api/people/?format=json , der er 87 count, hvis man kan få count ud af json kan det være dynamisk
-        int countpeople = 87;
+        int countpeople = 5;
         int iterator = 0;
         ForkJoinPool executor = new ForkJoinPool(25,
                 ForkJoinPool.defaultForkJoinWorkerThreadFactory,
@@ -41,14 +41,17 @@ public class SetupTestUsers {
             futureArrayList.add(executor.submit(worker));
             iterator++;
         }
+        StringBuilder sb = new StringBuilder();
         futureArrayList.parallelStream().forEach(future -> {
             try {
                 String getFutureStr = future.get(5, TimeUnit.SECONDS);
                 System.out.println("future value: " + getFutureStr + "\n");
+                sb.append(getFutureStr);
             } catch (InterruptedException | ExecutionException | TimeoutException ex) {
                 Logger.getLogger(SetupTestUsers.class.getName()).log(Level.SEVERE, null, ex);
             }
         });
+        return sb.toString();
     }
 
     public static void startCorrectly() {
